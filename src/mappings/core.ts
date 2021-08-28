@@ -28,12 +28,45 @@ import {
 } from './helpers'
 
 let MINING_POOLS: string[] = [
-  "0x7D0AF740540D634daaFE8AF34187Ec22915FBe5B", // avax-usdt
-]
+  "0x2bce0cab94770d0f2eae3e8a582adc3eaa0bd81f", // bag > bag
+  "0x706c57a2755956e3978f6b4986513e78d0a06520", // avax > bag
+  "0xfc6b409109e84b681786660405cff09c43fe9b4e", // xava > bag
+  "0x5053494d1efa7514c1d72cca8d8dca40d8119fcc", // bag > lyd
+  "0xcf09570845adc0df5dcfa5b93882b115ed0da89c", // qi > bag
+  "0x266cb810a383b70bfeca7285e0464746690e849b", // bag-avax
+  "0x6268c39511825d9a3fd4e7de75e8a4c784dca02b", // bag-dai
+  "0x7b68d44fcdef34a57f5c95c4a46c8a2e72fae4e2", // bag-eth
+  "0x507b2f7435e8ff982a17ced0988832e632c60e7e", // bag-wbtc
+  '0x3963b5b570f9eae630d645c109d3bdec299cbbee', // bag-xava
+  "0x1c596eaa585263519adc39d3896b6ae35c5830f6", // bag-link
+  "0xeb5069ae76f3f07bfebb4497c85efa9740520847", // bag-usdt
+  "0x6cbb1696d45e066b4ca79c58690d5b5146be94c5", // avax-link
+  "0xdb12cd73c8b547511e0171ea76223df227d27ceb", // avax-usdt
+  "0x30393161e53b56e51a4f4c72d3c6ae6907f44a2f", // avax-dai
+  "0x03800269e547f683a2f34c7426782eef7e1e5440", // avax-eth
+  "0xf125771f27b5a639c08e3086872085f8270c3ffb", // avax-wbtc
+  "0xf74c010cb319fda048006742ae2bdcca71beccba", // avax-xava
+  "0xe958dcc86632d7421a86133026423a232ea2212e", // avax-shibx
+  "0x1d96eb4bde096ef3a73583e02b3ffa4c2bb97933", // bag-shibx
+  "0xf487044ed85f2d47a8ead6b86c834976b8c31736", // yy bag
+  "0x58887009a412ad52a4fb746d0846585346d83bc0", // yy avax
+  "0x562acea3c03dbddc25e2f24bb2685d17bdb4e62f", // yy xava
+  "0x908698b561ea14f153ddd1ee02f99ebe0a4cea0f", // yy bag-avax
+  "0xb667121b4d4b6ea5de4bb61bd3a02e53529bfcca", // yy bag-xava
+  "0xbd9f16eee869808bf22823427d1f4a1e7a440e8d", // yy bag-eth
+  "0x90e24a2dfd80f02d01c7b630e8e3199c8a0388d3", // yy bag-link
+  "0x165fa1023429e266cd767845e8de419ce3abd379", // yy bag-usdt
+  "0x8f871d05d7afb9daffa5df13a91c74e870e6c31e", // yy bag-wbtc
+  "0xfd1f86448b56942c32b954092f2fdbce91e37bf6", // yy avax-usdt
+  "0xfb5aa7660fde5013996fd72a193accf00212af32", // yy avax-link
+  "0x39f7fcb3af11b0a274514c581d468739e75f64ec", // yy avax-xava
+  "0x8c3c86bea8ed5acbce4944def6731291eb193c26", // yy avax-eth
+  "0xfc47515433ee291e692958a2d15f99896fafc0bc", // yy avax-wbtc
+ ]
 
-function isCompleteMint(mintId: string): boolean {
-  return MintEvent.load(mintId).sender !== null // sufficient checks
-}
+ function isCompleteMint(mintId: string): boolean {
+   return MintEvent.load(mintId).sender !== null // sufficient checks
+ }
 
 export function handleTransfer(event: Transfer): void {
   // ignore initial transfers for first adds
@@ -289,6 +322,11 @@ export function handleSync(event: Sync): void {
 export function handleMint(event: Mint): void {
   let transaction = Transaction.load(event.transaction.hash.toHexString())
   let mints = transaction.mints
+
+  if (mints.length === 0) {
+    return
+  }
+
   let mint = MintEvent.load(mints[mints.length - 1])
 
   let pair = Pair.load(event.address.toHex())
