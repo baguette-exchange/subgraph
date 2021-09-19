@@ -22,6 +22,7 @@ import {
   ONE_BI,
   createUser,
   createLiquidityPosition,
+  createYieldYakLiquidityPosition,
   ZERO_BD,
   BI_18,
   createLiquiditySnapshot
@@ -40,6 +41,13 @@ let MINING_POOLS: string[] = [
   '0x3963b5b570f9eae630d645c109d3bdec299cbbee', // bag-xava
   "0x1c596eaa585263519adc39d3896b6ae35c5830f6", // bag-link
   "0xeb5069ae76f3f07bfebb4497c85efa9740520847", // bag-usdt
+  "0x1d96eb4bde096ef3a73583e02b3ffa4c2bb97933", // bag-shibx
+  "0x81a6fedcf8bd3de346b3d368904f536ffa13fdf0", // bag-usdte
+  "0x3c8201d13a6c573518574bf9bbd763318664eafa", // bag-linke
+  "0x8fab6f3c7fbca7b9aacb56bb4f17bc73c31e3f50", // bag-wethe
+  "0x4aafe44a0cdec72be791271013cee8af3f8c5753", // bag-yak
+  "0x8bcacf09adf3d9404ef34c3324eeec525adb5a65", // bag-qi
+  "0x12bca09acbee692fdd8473e68cf0ecd83570b111", // bag-wet
   "0x6cbb1696d45e066b4ca79c58690d5b5146be94c5", // avax-link
   "0xdb12cd73c8b547511e0171ea76223df227d27ceb", // avax-usdt
   "0x30393161e53b56e51a4f4c72d3c6ae6907f44a2f", // avax-dai
@@ -47,26 +55,39 @@ let MINING_POOLS: string[] = [
   "0xf125771f27b5a639c08e3086872085f8270c3ffb", // avax-wbtc
   "0xf74c010cb319fda048006742ae2bdcca71beccba", // avax-xava
   "0xe958dcc86632d7421a86133026423a232ea2212e", // avax-shibx
-  "0x1d96eb4bde096ef3a73583e02b3ffa4c2bb97933", // bag-shibx
-  "0xf487044ed85f2d47a8ead6b86c834976b8c31736", // yy bag
-  "0x58887009a412ad52a4fb746d0846585346d83bc0", // yy avax
-  "0x562acea3c03dbddc25e2f24bb2685d17bdb4e62f", // yy xava
-  "0x908698b561ea14f153ddd1ee02f99ebe0a4cea0f", // yy bag-avax
-  "0xb667121b4d4b6ea5de4bb61bd3a02e53529bfcca", // yy bag-xava
-  "0xbd9f16eee869808bf22823427d1f4a1e7a440e8d", // yy bag-eth
-  "0x90e24a2dfd80f02d01c7b630e8e3199c8a0388d3", // yy bag-link
-  "0x165fa1023429e266cd767845e8de419ce3abd379", // yy bag-usdt
-  "0x8f871d05d7afb9daffa5df13a91c74e870e6c31e", // yy bag-wbtc
-  "0xfd1f86448b56942c32b954092f2fdbce91e37bf6", // yy avax-usdt
-  "0xfb5aa7660fde5013996fd72a193accf00212af32", // yy avax-link
-  "0x39f7fcb3af11b0a274514c581d468739e75f64ec", // yy avax-xava
-  "0x8c3c86bea8ed5acbce4944def6731291eb193c26", // yy avax-eth
-  "0xfc47515433ee291e692958a2d15f99896fafc0bc", // yy avax-wbtc
- ]
+  "0xb00d89c3f65cef0742f9d0cc59c9ad90a01b8faf", // avax-usdte
+  "0x3a2d34b6ca91c33a8042ddb00b5f68d2e2834267", // avax-linke
+  "0x9c8cdcc785dba292f8bccff533c5622e06f0b76c", // avax-wethe
+  "0xe1974858008ba95dc515fe72650bfa81125718bc", // avax-yak
+];
 
- function isCompleteMint(mintId: string): boolean {
-   return MintEvent.load(mintId).sender !== null // sufficient checks
- }
+let YIELDYAK_POOLS: string[] = [
+  '0xf487044ed85f2d47a8ead6b86c834976b8c31736', // bag
+  '0xf487044ed85f2d47a8ead6b86c834976b8c31736', // bag
+  '0x58887009a412ad52a4fb746d0846585346d83bc0', // avax
+  '0x562acea3c03dbddc25e2f24bb2685d17bdb4e62f', // xava
+  '0x908698b561ea14f153ddd1ee02f99ebe0a4cea0f', // bag-avax
+  '0xb667121b4d4b6ea5de4bb61bd3a02e53529bfcca', // bag-xava
+  '0xbd9f16eee869808bf22823427d1f4a1e7a440e8d', // bag-eth
+  '0x90e24a2dfd80f02d01c7b630e8e3199c8a0388d3', // bag-link
+  '0x165fa1023429e266cd767845e8de419ce3abd379', // bag-usdt
+  '0x8f871d05d7afb9daffa5df13a91c74e870e6c31e', // bag-wbtc
+  '0x142b4e2c9234afc3dc07e12d24493a4ef26c537c', // bag-wethe
+  '0x3ca2cfd8e17c40ac6f4aa6c1a4b1723f0bf59dd8', // bag-linke
+  '0xb940da8b71791c1f42cc612d1af427878ec1a369', // bag-usdte
+  '0x1b53500677cb1b042b12081a8661a6f08781d58c', // bag-yak
+  '0x9ee89f3a3dfd596bb6f53696e2ed1d09c738f8c8', // bag-qi
+  '0x211654525dc64a7f74f6361d6f3dc0710108ae43', // bag-wet
+  '0xfd1f86448b56942c32b954092f2fdbce91e37bf6', // avax-usdt
+  '0xfb5aa7660fde5013996fd72a193accf00212af32', // avax-link
+  '0x39f7fcb3af11b0a274514c581d468739e75f64ec', // avax-xava
+  '0x8c3c86bea8ed5acbce4944def6731291eb193c26', // avax-eth
+  '0xfc47515433ee291e692958a2d15f99896fafc0bc', // avax-wbtc
+];
+
+function isCompleteMint(mintId: string): boolean {
+  return MintEvent.load(mintId).sender !== null // sufficient checks
+}
 
 export function handleTransfer(event: Transfer): void {
   // ignore initial transfers for first adds
@@ -79,14 +100,51 @@ export function handleTransfer(event: Transfer): void {
     return
   }
 
-  let factory = BaguetteFactory.load(FACTORY_ADDRESS)
-  let transactionHash = event.transaction.hash.toHexString()
-
   // user stats
   let from = event.params.from
   createUser(from)
   let to = event.params.to
   createUser(to)
+
+  // if in/out of a Yield Yak pool, update liquidity position
+  if (YIELDYAK_POOLS.includes(from.toHexString()) || YIELDYAK_POOLS.includes(to.toHexString())) {
+    // liquidity token amount being transfered
+    let value = convertTokenToDecimal(event.params.value, BI_18)
+
+    if (YIELDYAK_POOLS.includes(to.toHexString())) {
+      // ignore minting by the YY contract on reinvest
+      if (from.toHexString() == ADDRESS_ZERO) {
+        return
+      }
+
+      // store liquidity amount deposited to YY pool
+      let userYYLiquidityPosition = createYieldYakLiquidityPosition(to, from, event.address)
+      userYYLiquidityPosition.liquidityTokenBalance = userYYLiquidityPosition.liquidityTokenBalance.minus(value)
+      userYYLiquidityPosition.save()
+    }
+
+    if (YIELDYAK_POOLS.includes(from.toHexString())) {
+      // decrement the liquidity of the YY pool by the withdrawn amount
+      let userYYLiquidityPosition = createYieldYakLiquidityPosition(from, to, event.address)
+      userYYLiquidityPosition.liquidityTokenBalance = userYYLiquidityPosition.liquidityTokenBalance.plus(value)
+
+      // residual YY pool amount is the liquidity gain, add it to the liquidity position
+      let toUserLiquidityPosition = createLiquidityPosition(event.address, to)
+      toUserLiquidityPosition.liquidityTokenBalance = toUserLiquidityPosition.liquidityTokenBalance
+        .plus(userYYLiquidityPosition.liquidityTokenBalance)
+      toUserLiquidityPosition.save()
+      createLiquiditySnapshot(toUserLiquidityPosition, event)
+
+      // reset the YY liquidity amount
+      userYYLiquidityPosition.liquidityTokenBalance = ZERO_BD
+      userYYLiquidityPosition.save()
+    }
+
+    return
+  }
+
+  let factory = BaguetteFactory.load(FACTORY_ADDRESS)
+  let transactionHash = event.transaction.hash.toHexString()
 
   // get pair and load contract
   let pair = Pair.load(event.address.toHexString())
@@ -108,7 +166,7 @@ export function handleTransfer(event: Transfer): void {
 
   // mints
   let mints = transaction.mints
-  if (from.toHexString() == ADDRESS_ZERO) {
+  if (from.toHexString() == ADDRESS_ZERO && to.toHexString() != ADDRESS_ZERO) {
     // update total supply
     pair.totalSupply = pair.totalSupply.plus(value)
     pair.save()
@@ -244,7 +302,7 @@ export function handleTransfer(event: Transfer): void {
     createLiquiditySnapshot(fromUserLiquidityPosition, event)
   }
 
-  if (event.params.to.toHexString() != ADDRESS_ZERO && to.toHexString() != pair.id) {
+  if (to.toHexString() != ADDRESS_ZERO && to.toHexString() != pair.id) {
     let toUserLiquidityPosition = createLiquidityPosition(event.address, to)
     toUserLiquidityPosition.liquidityTokenBalance = toUserLiquidityPosition.liquidityTokenBalance.plus(convertTokenToDecimal(event.params.value, BI_18))
     toUserLiquidityPosition.save()

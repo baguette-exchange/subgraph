@@ -3,7 +3,7 @@ import { log, BigInt, BigDecimal, Address, EthereumEvent } from '@graphprotocol/
 import { ERC20 } from '../types/Factory/ERC20'
 import { ERC20SymbolBytes } from '../types/Factory/ERC20SymbolBytes'
 import { ERC20NameBytes } from '../types/Factory/ERC20NameBytes'
-import { User, Bundle, Token, LiquidityPosition, LiquidityPositionSnapshot, Pair } from '../types/schema'
+import { User, Bundle, Token, LiquidityPosition, YieldYakLiquidityPosition, LiquidityPositionSnapshot, Pair } from '../types/schema'
 import { Factory as FactoryContract } from '../types/templates/Pair/Factory'
 
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
@@ -138,6 +138,23 @@ export function fetchTokenDecimals(tokenAddress: Address): BigInt {
     decimalValue = decimalResult.value
   }
   return BigInt.fromI32(decimalValue as i32)
+}
+
+export function createYieldYakLiquidityPosition(exchange: Address, user: Address, liquidityPair: Address): YieldYakLiquidityPosition {
+  let id = exchange
+    .toHexString()
+    .concat('-')
+    .concat(user.toHexString())
+  let liquidityTokenBalance = YieldYakLiquidityPosition.load(id)
+  if (liquidityTokenBalance === null) {
+    liquidityTokenBalance = new YieldYakLiquidityPosition(id)
+    liquidityTokenBalance.liquidityTokenBalance = ZERO_BD
+    liquidityTokenBalance.pair = liquidityPair.toHexString()
+    liquidityTokenBalance.user = user.toHexString()
+    liquidityTokenBalance.save()
+  }
+  if (liquidityTokenBalance === null) log.error('LiquidityTokenBalance is null', [id])
+  return liquidityTokenBalance as YieldYakLiquidityPosition
 }
 
 export function createLiquidityPosition(exchange: Address, user: Address): LiquidityPosition {

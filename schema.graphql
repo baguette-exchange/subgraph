@@ -108,6 +108,13 @@ type LiquidityPosition @entity {
   liquidityTokenBalance: BigDecimal!
 }
 
+type YieldYakLiquidityPosition @entity {
+  id: ID!
+  user: User!
+  pair: Pair!
+  liquidityTokenBalance: BigDecimal!
+}
+
 # saved over time for return calculations, gets created and never updated
 type LiquidityPositionSnapshot @entity {
   id: ID!
