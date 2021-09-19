@@ -5,39 +5,58 @@ import { ZERO_BD, factoryContract, ADDRESS_ZERO, ONE_BD } from './helpers'
 import { log } from '@graphprotocol/graph-ts'
 
 const WAVAX_ADDRESS = '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7'
-const USDC_WETH_PAIR = '0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc' // created 10008355
-const DAI_WETH_PAIR = '0xa478c2975ab1ea89e8196811f51a7b7ade33eb11' // created block 10042267
-const USDT_WETH_PAIR = '0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852' // created block 10093341
+const AEB_USDT_WAVAX_PAIR = '0x9ee0a4e21bd333a6bb2ab298194320b8daa26516'  // created block 60,337
+const AEB_DAI_WAVAX_PAIR = '0x17a2e8275792b4616befb02eb9ae699aa0dcb94b'   // created block 60,355
+const AB_DAI_WAVAX_PAIR = '0xba09679ab223c6bdaf44d45ba2d7279959289ab0' // created block 2,781,964
+const AB_USDT_WAVAX_PAIR = '0xe28984e1ee8d431346d32bec9ec800efb643eef4' // created block 2,781,997
 
 export function getEthPriceInUSD(): BigDecimal {
   // fetch eth prices for each stablecoin
-  let daiPair = Pair.load(DAI_WETH_PAIR) // dai is token0
-  let usdcPair = Pair.load(USDC_WETH_PAIR) // usdc is token0
-  let usdtPair = Pair.load(USDT_WETH_PAIR) // usdt is token1
 
-  // all 3 have been created
-  if (daiPair !== null && usdcPair !== null && usdtPair !== null) {
-    let totalLiquidityETH = daiPair.reserve1.plus(usdcPair.reserve1).plus(usdtPair.reserve0)
-    let daiWeight = daiPair.reserve1.div(totalLiquidityETH)
-    let usdcWeight = usdcPair.reserve1.div(totalLiquidityETH)
-    let usdtWeight = usdtPair.reserve0.div(totalLiquidityETH)
-    return daiPair.token0Price
-      .times(daiWeight)
-      .plus(usdcPair.token0Price.times(usdcWeight))
-      .plus(usdtPair.token1Price.times(usdtWeight))
-    // dai and USDC have been created
-  } else if (daiPair !== null && usdcPair !== null) {
-    let totalLiquidityETH = daiPair.reserve1.plus(usdcPair.reserve1)
-    let daiWeight = daiPair.reserve1.div(totalLiquidityETH)
-    let usdcWeight = usdcPair.reserve1.div(totalLiquidityETH)
-    return daiPair.token0Price.times(daiWeight).plus(usdcPair.token0Price.times(usdcWeight))
-    // USDC is the only pair so far
-  } else if (usdcPair !== null) {
-    return usdcPair.token0Price
+  let aebUsdtPair = Pair.load(AEB_USDT_WAVAX_PAIR) // USDT is token1
+  let aebDaiPair = Pair.load(AEB_DAI_WAVAX_PAIR) // DAI is token1
+  let abDaiPair = Pair.load(AB_DAI_WAVAX_PAIR) // DAI.e is token1
+  let abUsdtPair = Pair.load(AB_USDT_WAVAX_PAIR) // USDT.e is token1
+
+  if (aebUsdtPair !== null && aebDaiPair !== null && abDaiPair !== null && abUsdtPair !== null) {
+    // USDT (aeb), DAI (aeb), DAI.e, and USDT.e have been created
+    let totalLiquidityWAVAX = aebUsdtPair.reserve0
+        .plus(aebDaiPair.reserve0)
+        .plus(abDaiPair.reserve0)
+        .plus(abUsdtPair.reserve0)
+    let aebUsdtWeight = aebUsdtPair.reserve0.div(totalLiquidityWAVAX)
+    let aebDaiWeight = aebDaiPair.reserve0.div(totalLiquidityWAVAX)
+    let abDaiWeight = abDaiPair.reserve0.div(totalLiquidityWAVAX)
+    let abUsdtWeight = abUsdtPair.reserve0.div(totalLiquidityWAVAX)
+    return aebUsdtPair.token1Price.times(aebUsdtWeight)
+        .plus(aebDaiPair.token1Price.times(aebDaiWeight))
+        .plus(abDaiPair.token1Price.times(abDaiWeight))
+        .plus(abUsdtPair.token1Price.times(abUsdtWeight))
+  } else if (aebUsdtPair !== null && aebDaiPair !== null && abDaiPair !== null) {
+    // USDT (aeb), DAI (aeb), and DAI.e have been created
+    let totalLiquidityWAVAX = aebUsdtPair.reserve0
+        .plus(aebDaiPair.reserve0)
+        .plus(abDaiPair.reserve0)
+    let aebUsdtWeight = aebUsdtPair.reserve0.div(totalLiquidityWAVAX)
+    let aebDaiWeight = aebDaiPair.reserve0.div(totalLiquidityWAVAX)
+    let abDaiWeight = abDaiPair.reserve0.div(totalLiquidityWAVAX)
+    return aebUsdtPair.token1Price.times(aebUsdtWeight)
+        .plus(aebDaiPair.token1Price.times(aebDaiWeight))
+        .plus(abDaiPair.token1Price.times(abDaiWeight))
+  } else if (aebUsdtPair !== null && aebDaiPair !== null) {
+    // USDT (aeb) and DAI (aeb) have been created
+    let totalLiquidityWAVAX = aebUsdtPair.reserve0
+        .plus(aebDaiPair.reserve0)
+    let aebUsdtWeight = aebUsdtPair.reserve0.div(totalLiquidityWAVAX)
+    let aebDaiWeight = aebDaiPair.reserve0.div(totalLiquidityWAVAX)
+    return aebUsdtPair.token1Price.times(aebUsdtWeight)
+        .plus(aebDaiPair.token1Price.times(aebDaiWeight))
+  } else if (aebUsdtPair !== null) {
+    // only USDT (aeb) has been created
+    return aebUsdtPair.token1Price
   } else {
-    //return ONE_BD.times(BigDecimal.fromString("4")) // hack, REMOVE!
-    let ret = ONE_BD.times(BigDecimal.fromString("2")).div(BigDecimal.fromString("2"))
-    return ret // hack, REMOVE!
+    // none have been created
+    return ONE_BD // hack, REMOVE!
   }
 }
 
@@ -45,15 +64,25 @@ export function getEthPriceInUSD(): BigDecimal {
 let WHITELIST: string[] = [
   WAVAX_ADDRESS, // WAVAX
   '0xa1144a6A1304bd9cbb16c800F7a867508726566E', // BAG
-  '0xf20d962a6c8f70c731bd838a3a388d7d48fa6e15', // eth
-  '0xde3a24028580884448a5397872046a019649b084', // usdt
-  '0xb3fe5374f67d7a22886a0ee082b2e2f9d2651651', // link
-  '0x8ce2dee54bb9921a2ae0a63dbb2df8ed88b91dd9', // aave
-  '0xf39f9671906d8630812f9d9863bbef5d523c84ab', // uni
-  '0x408d4cd0adb7cebd1f1a1c33a0ba2098e1295bab', // wbtc
-  '0x39cf1bd5f15fb22ec3d9ff86b0727afc203427cc', // sushi
-  '0xba7deebbfc5fa1100fb055a87773e1e99cd3507a', // dai
-  '0x99519acb025a0e0d44c3875a4bbf03af65933627' // yfi
+  '0xf20d962a6c8f70c731bd838a3a388d7d48fa6e15', // ETH (aeb)
+  '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab', // WETH.e
+  '0xde3a24028580884448a5397872046a019649b084', // USDT (aeb)
+  '0xc7198437980c041c805a1edcba50c1ce5db95118', // USDT.e
+  '0xb3fe5374f67d7a22886a0ee082b2e2f9d2651651', // LINK (aeb)
+  '0x5947bb275c521040051d82396192181b413227a3', // LINK.e
+  '0x408d4cd0adb7cebd1f1a1c33a0ba2098e1295bab', // WBTC (aeb)
+  '0x50b7545627a5162f82a992c33b87adc75187b218', // WBTC.e
+  '0xba7deebbfc5fa1100fb055a87773e1e99cd3507a', // DAI (aeb)
+  '0xd586e7f844cea2f87f50152665bcbc2c279d8d70', // DAI.e
+  '0xc38f41a296a4493ff429f1238e030924a1542e50', // SNOB
+  '0x846d50248baf8b7ceaa9d9b53bfd12d7d7fbb25a', // VSO
+  '0x6e7f5c0b9f4432716bdd0a77a3601291b9d9e985', // SPORE
+  '0xd1c3f94de7e5b45fa4edbba472491a9f4b166fc4', // XAVA
+  '0xe896cdeaac9615145c0ca09c8cd5c25bced6384c', // PEFI
+  '0x59414b3089ce2af0010e7523dea7e2b35d776ec7', // YAK
+  '0x8729438eb15e2c8b576fcc6aecda6a148776c0f5', // QI
+  '0xb1466d4cf0dcfc0bcddcf3500f473cdacb88b56d', // WET
+  '0x60781c2586d68229fde47564546784ab3faca982', // PNG
 ]
 
 // minimum liquidity required to count towards tracked volume for pairs with small # of Lps
