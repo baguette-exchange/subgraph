@@ -83,6 +83,10 @@ let WHITELIST: string[] = [
   '0x8729438eb15e2c8b576fcc6aecda6a148776c0f5', // QI
   '0xb1466d4cf0dcfc0bcddcf3500f473cdacb88b56d', // WET
   '0x60781c2586d68229fde47564546784ab3faca982', // PNG
+  '0x440abbf18c54b2782a4917b80a1746d3a2c2cce1', // SHIBX
+  '0x4c1057455747e3ee5871d374fdd77a304ce10989', // XMTL
+  '0x70b4ae8eb7bd572fc0eb244cd8021066b3ce7ee4', // XCRS
+  '0xe6ee049183b474ecf7704da3f6f555a1dcaf240f', // XSLR
 ]
 
 // minimum liquidity required to count towards tracked volume for pairs with small # of Lps
