@@ -9,7 +9,6 @@ import {
   Burn as BurnEvent,
   Swap as SwapEvent,
   Bundle,
-  LiquidityPosition
 } from '../types/schema'
 import { Pair as PairContract, Mint, Burn, Swap, Transfer, Sync } from '../types/templates/Pair/Pair'
 import { updatePairDayData, updateTokenDayData, updateBaguetteDayData, updatePairHourData } from './dayUpdates'
@@ -98,13 +97,17 @@ function isCompleteMint(mintId: string): boolean {
 }
 
 export function handleTransfer(event: Transfer): void {
+  let eventToAsHexString = event.params.to.toHexString()
+  let eventFromAsHexString = event.params.from.toHexString()
+  let eventHashAsHexString = event.transaction.hash.toHexString()
+
   // ignore initial transfers for first adds
-  if (event.params.to.toHexString() == ADDRESS_ZERO && event.params.value.equals(BigInt.fromI32(1000))) {
+  if (eventToAsHexString == ADDRESS_ZERO && event.params.value.equals(BigInt.fromI32(1000))) {
     return
   }
 
   // skip if staking/unstaking
-  if (MINING_POOLS.includes(event.params.from.toHexString()) || MINING_POOLS.includes(event.params.to.toHexString())) {
+  if (MINING_POOLS.includes(eventFromAsHexString) || MINING_POOLS.includes(eventToAsHexString)) {
     return
   }
 
@@ -115,13 +118,13 @@ export function handleTransfer(event: Transfer): void {
   createUser(to)
 
   // if in/out of a Yield Yak pool, update liquidity position
-  if (YIELDYAK_POOLS.includes(from.toHexString()) || YIELDYAK_POOLS.includes(to.toHexString())) {
+  if (YIELDYAK_POOLS.includes(eventFromAsHexString) || YIELDYAK_POOLS.includes(eventToAsHexString)) {
     // liquidity token amount being transfered
     let value = convertTokenToDecimal(event.params.value, BI_18)
 
-    if (YIELDYAK_POOLS.includes(to.toHexString())) {
+    if (YIELDYAK_POOLS.includes(eventToAsHexString)) {
       // ignore minting by the YY contract on reinvest
-      if (from.toHexString() == ADDRESS_ZERO) {
+      if (eventFromAsHexString == ADDRESS_ZERO) {
         return
       }
 
@@ -131,7 +134,7 @@ export function handleTransfer(event: Transfer): void {
       userYYLiquidityPosition.save()
     }
 
-    if (YIELDYAK_POOLS.includes(from.toHexString())) {
+    if (YIELDYAK_POOLS.includes(eventFromAsHexString)) {
       // decrement the liquidity of the YY pool by the withdrawn amount
       let userYYLiquidityPosition = createYieldYakLiquidityPosition(from, to, event.address)
       userYYLiquidityPosition.liquidityTokenBalance = userYYLiquidityPosition.liquidityTokenBalance.plus(value)
@@ -152,19 +155,18 @@ export function handleTransfer(event: Transfer): void {
   }
 
   let factory = BaguetteFactory.load(FACTORY_ADDRESS)
-  let transactionHash = event.transaction.hash.toHexString()
 
   // get pair and load contract
   let pair = Pair.load(event.address.toHexString())
   let pairContract = PairContract.bind(event.address)
 
-  // liquidity token amount being transfered
+  // liquidity token amount being transferred
   let value = convertTokenToDecimal(event.params.value, BI_18)
 
   // get or create transaction
-  let transaction = Transaction.load(transactionHash)
+  let transaction = Transaction.load(eventHashAsHexString)
   if (transaction === null) {
-    transaction = new Transaction(transactionHash)
+    transaction = new Transaction(eventHashAsHexString)
     transaction.blockNumber = event.block.number
     transaction.timestamp = event.block.timestamp
     transaction.mints = []
@@ -174,7 +176,7 @@ export function handleTransfer(event: Transfer): void {
 
   // mints
   let mints = transaction.mints
-  if (from.toHexString() == ADDRESS_ZERO && to.toHexString() != ADDRESS_ZERO) {
+  if (eventFromAsHexString == ADDRESS_ZERO && eventToAsHexString != ADDRESS_ZERO) {
     // update total supply
     pair.totalSupply = pair.totalSupply.plus(value)
     pair.save()
@@ -182,8 +184,7 @@ export function handleTransfer(event: Transfer): void {
     // create new mint if no mints so far or if last one is done already
     if (mints.length === 0 || isCompleteMint(mints[mints.length - 1])) {
       let mint = new MintEvent(
-        event.transaction.hash
-          .toHexString()
+        eventHashAsHexString
           .concat('-')
           .concat(BigInt.fromI32(mints.length).toString())
       )
@@ -205,11 +206,10 @@ export function handleTransfer(event: Transfer): void {
   }
 
   // case where direct send first on ETH withdrawls
-  if (event.params.to.toHexString() == pair.id) {
+  if (eventToAsHexString == pair.id) {
     let burns = transaction.burns
     let burn = new BurnEvent(
-      event.transaction.hash
-        .toHexString()
+      eventHashAsHexString
         .concat('-')
         .concat(BigInt.fromI32(burns.length).toString())
     )
@@ -231,7 +231,7 @@ export function handleTransfer(event: Transfer): void {
   }
 
   // burn
-  if (event.params.to.toHexString() == ADDRESS_ZERO && event.params.from.toHexString() == pair.id) {
+  if (eventToAsHexString == ADDRESS_ZERO && eventFromAsHexString == pair.id) {
     pair.totalSupply = pair.totalSupply.minus(value)
     pair.save()
 
@@ -244,8 +244,7 @@ export function handleTransfer(event: Transfer): void {
         burn = currentBurn as BurnEvent
       } else {
         burn = new BurnEvent(
-          event.transaction.hash
-            .toHexString()
+          eventHashAsHexString
             .concat('-')
             .concat(BigInt.fromI32(burns.length).toString())
         )
@@ -258,8 +257,7 @@ export function handleTransfer(event: Transfer): void {
       }
     } else {
       burn = new BurnEvent(
-        event.transaction.hash
-          .toHexString()
+        eventHashAsHexString
           .concat('-')
           .concat(BigInt.fromI32(burns.length).toString())
       )
@@ -303,14 +301,14 @@ export function handleTransfer(event: Transfer): void {
     transaction.save()
   }
 
-  if (from.toHexString() != ADDRESS_ZERO && from.toHexString() != pair.id) {
+  if (eventFromAsHexString != ADDRESS_ZERO && eventToAsHexString != pair.id) {
     let fromUserLiquidityPosition = createLiquidityPosition(event.address, from)
     fromUserLiquidityPosition.liquidityTokenBalance = fromUserLiquidityPosition.liquidityTokenBalance.minus(convertTokenToDecimal(event.params.value, BI_18))
     fromUserLiquidityPosition.save()
     createLiquiditySnapshot(fromUserLiquidityPosition, event)
   }
 
-  if (to.toHexString() != ADDRESS_ZERO && to.toHexString() != pair.id) {
+  if (eventToAsHexString != ADDRESS_ZERO && eventToAsHexString != pair.id) {
     let toUserLiquidityPosition = createLiquidityPosition(event.address, to)
     toUserLiquidityPosition.liquidityTokenBalance = toUserLiquidityPosition.liquidityTokenBalance.plus(convertTokenToDecimal(event.params.value, BI_18))
     toUserLiquidityPosition.save()
