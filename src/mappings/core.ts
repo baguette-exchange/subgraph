@@ -34,6 +34,7 @@ let MINING_POOLS: string[] = [
   "0xfc6b409109e84b681786660405cff09c43fe9b4e", // xava > bag
   "0x5053494d1efa7514c1d72cca8d8dca40d8119fcc", // bag > lyd
   "0xcf09570845adc0df5dcfa5b93882b115ed0da89c", // qi > bag
+  "0x3141ae9c20b952917384d7527d136d10ee06b969", // wet > wet
   "0x266cb810a383b70bfeca7285e0464746690e849b", // bag-avax
   "0x6268c39511825d9a3fd4e7de75e8a4c784dca02b", // bag-dai
   "0x7b68d44fcdef34a57f5c95c4a46c8a2e72fae4e2", // bag-eth
@@ -48,6 +49,11 @@ let MINING_POOLS: string[] = [
   "0x4aafe44a0cdec72be791271013cee8af3f8c5753", // bag-yak
   "0x8bcacf09adf3d9404ef34c3324eeec525adb5a65", // bag-qi
   "0x12bca09acbee692fdd8473e68cf0ecd83570b111", // bag-wet
+  "0xe01c00179b9e8cfdcfae163a6e86015a8615b9e6", // bag-usdce
+  "0x0e1d741a93705798288761b02644af69402f055e", // bag-xmtl
+  "0x6ee37a9b55e3f634dfeb1db065a8c7da2e2a3d4c", // bag-xslr
+  "0x63329832b33b7539b5ff629d671cb66d4b41c04b", // bag-xcrs
+  "0x4487c087e57c45577a2583115160f778de52d53a", // bag-klo
   "0x6cbb1696d45e066b4ca79c58690d5b5146be94c5", // avax-link
   "0xdb12cd73c8b547511e0171ea76223df227d27ceb", // avax-usdt
   "0x30393161e53b56e51a4f4c72d3c6ae6907f44a2f", // avax-dai
@@ -59,10 +65,12 @@ let MINING_POOLS: string[] = [
   "0x3a2d34b6ca91c33a8042ddb00b5f68d2e2834267", // avax-linke
   "0x9c8cdcc785dba292f8bccff533c5622e06f0b76c", // avax-wethe
   "0xe1974858008ba95dc515fe72650bfa81125718bc", // avax-yak
+  "0xc10f947e9ffffac56a8ace7eca988c494f72d9f0", // avax-klo
+  "0x4783bcc75ac074433f134f8c418bd1c3d5aa4292", // avax-usdce
+  "0x34f0a733cb0d1f92ca3502a04c73f983346270c2", // usde-usdte
 ];
 
 let YIELDYAK_POOLS: string[] = [
-  '0xf487044ed85f2d47a8ead6b86c834976b8c31736', // bag
   '0xf487044ed85f2d47a8ead6b86c834976b8c31736', // bag
   '0x58887009a412ad52a4fb746d0846585346d83bc0', // avax
   '0x562acea3c03dbddc25e2f24bb2685d17bdb4e62f', // xava

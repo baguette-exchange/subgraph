@@ -87,6 +87,8 @@ let WHITELIST: string[] = [
   '0x4c1057455747e3ee5871d374fdd77a304ce10989', // XMTL
   '0x70b4ae8eb7bd572fc0eb244cd8021066b3ce7ee4', // XCRS
   '0xe6ee049183b474ecf7704da3f6f555a1dcaf240f', // XSLR
+  '0xb27c8941a7df8958a1778c0259f76d1f8b711c35', // KLO
+  '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664', // USDC.e
 ]
 
 // minimum liquidity required to count towards tracked volume for pairs with small # of Lps
