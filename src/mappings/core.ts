@@ -66,6 +66,7 @@ let MINING_POOLS: string[] = [
   "0xe1974858008ba95dc515fe72650bfa81125718bc", // avax-yak
   "0xc10f947e9ffffac56a8ace7eca988c494f72d9f0", // avax-klo
   "0x4783bcc75ac074433f134f8c418bd1c3d5aa4292", // avax-usdce
+  "0x8384dfb4d9da700326a0af428d944a0ae7170201", // avax-void
   "0x34f0a733cb0d1f92ca3502a04c73f983346270c2", // usde-usdte
 ];
 
